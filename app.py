@@ -5,31 +5,51 @@ import plotly.graph_objects as go
 import os
 
 # -----------------------------
-# Configuration
+# Configuration + Favicon
 # -----------------------------
 st.set_page_config(
     page_title="🇲🇷 Dashboard Macroéconomique – Mauritanie",
-    page_icon="🏦",
+    page_icon="https://upload.wikimedia.org/wikipedia/commons/4/43/Flag_of_Mauritania.svg",  # Favicon = drapeau
     layout="wide"
 )
+
+# -----------------------------
+# CSS Professionnel – Style BCM/FMI
+# -----------------------------
+st.markdown("""
+<style>
+    .main { background: #f8fafc; }
+    h1, h2, h3 { color: #0B3C5D; font-weight: bold; }
+    .stPlotlyChart {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    [data-testid="stMetric"] {
+        background: #f0f9ff;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(11,60,93,0.1);
+    }
+    [data-testid="stMetricValue"] {
+        color: #0B3C5D !important;
+        font-weight: bold;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # -----------------------------
 # Chargement des données
 # -----------------------------
 @st.cache_data
 def load_and_clean_data():
-    # Gérer les deux cas : local et Streamlit Cloud
-    if os.path.exists("macro_mauritanie_complet_1960_2024.csv"):
-        df = pd.read_csv("macro_mauritanie_complet_1960_2024.csv")
-    else:
-        # Si le CSV est à la racine (comme sur Streamlit Cloud)
-        df = pd.read_csv("macro_mauritanie_complet_1960_2024.csv")
-    
+    df = pd.read_csv("macro_mauritanie_complet_1960_2024.csv")
     df["Année"] = df["Année"].astype(int)
     df = df.groupby("Année", as_index=False).first()
     df = df.sort_values("Année").reset_index(drop=True)
     
-    # Imputation
+    # Imputation (ton code original)
     df.loc[df["Année"] >= 1962, "Croissance_PIB_pct"] = df.loc[df["Année"] >= 1962, "Croissance_PIB_pct"].interpolate()
     df.loc[df["Année"] >= 1986, "Inflation_pct"] = df.loc[df["Année"] >= 1986, "Inflation_pct"].interpolate()
     df.loc[(df["Année"] >= 2007) & (df["Année"] <= 2024), "Recettes_fiscales_pct_PIB"] = df.loc[(df["Année"] >= 2007) & (df["Année"] <= 2024), "Recettes_fiscales_pct_PIB"].interpolate()
@@ -43,120 +63,98 @@ def load_and_clean_data():
     
     return df
 
-# Charger les données
 df = load_and_clean_data()
 
 # -----------------------------
-# Menu latéral
+# Menu latéral – Icônes professionnelles
 # -----------------------------
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/4/43/Flag_of_Mauritania.svg", width=60)
 st.sidebar.title("🧭 Navigation")
 
 page = st.sidebar.radio(
-    "Aller à la section :",
+    "Sections économiques",
     [
         "🏠 Accueil",
-        "📈 Croissance",
-        "🔥 Inflation",
-        "🌍 Secteur Extérieur",
+        "📈 Croissance & Cycles Économiques",
+        "📊 Stabilité des Prix (Inflation)",
+        "🌍 Soutenabilité du Secteur Extérieur",
         "🏛️ Finances Publiques",
-        "👥 Chômage",
-        "💸 Envois de Fonds",
-        "📊 Dette vs Réserves",
-        "💹 Courbe de Phillips",
-        "🥧 Recettes fiscales 2024",
-        "🔥 Heatmap",
-        "📚 Stackplot",
-        "📦 Boxplot par Période",
-        "📉 Volatilité",
-        "🎯 Régimes macro",
-        "🎲 Trajectoire 3D",
-        "💰 Recettes 3D",
+        "👥 Marché du Travail",
+        "💸 Flux Financiers Internationaux",
+        "🔍 Analyses Transversales",
         "📚 Méthodologie"
-    ],
-    index=0
+    ]
 )
 
 # -----------------------------
-# En-tête principal
+# En-tête
 # -----------------------------
 col1, col2 = st.columns([1, 8])
 with col1:
     st.image("https://upload.wikimedia.org/wikipedia/commons/4/43/Flag_of_Mauritania.svg", width=80)
 with col2:
     st.title("Dashboard Macroéconomique – République Islamique de Mauritanie")
-    st.markdown("Suivi des indicateurs clés — Banque Centrale, FMI, Banque Mondiale")
+    st.markdown("Banque Centrale de Mauritanie • FMI • Banque Mondiale")
 
 st.markdown("---")
 
 # -----------------------------
-# Fonction pour charger et exécuter une page
+# Fonction pour charger une visualisation EXACTE
 # -----------------------------
-def load_page(page_name):
-    """Charge et exécute le contenu d'une page depuis le dossier pages/"""
-    try:
-        with open(f"pages/{page_name}.py", "r", encoding="utf-8") as f:
-            code = f.read()
-            # Injecter df dans le namespace
-            exec(code, {"st": st, "pd": pd, "go": go, "df": df})
-    except FileNotFoundError:
-        st.error(f"Page non trouvée : {page_name}")
+def load_viz(filename):
+    """Charge le code exact de ta visualisation Plotly"""
+    with open(f"pages/{filename}.py", "r", encoding="utf-8") as f:
+        code = f.read()
+        exec(code, {"st": st, "pd": pd, "go": go, "df": df})
 
 # -----------------------------
-# Affichage selon la page sélectionnée
+# Affichage par section
 # -----------------------------
 if page == "🏠 Accueil":
-    # KPIs
+    # KPIs avec ta palette
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         val = df.loc[df["Année"] == 2024, "Croissance_PIB_pct"].iloc[0]
-        st.metric("Croissance 2024", f"{val:.1f}%", delta="↑ 45% vs 2023")
+        st.metric("Croissance 2024", f"{val:.1f}%")
     with col2:
         val = df.loc[df["Année"] == 2024, "Inflation_pct"].iloc[0]
-        st.metric("Inflation 2024", f"{val:.1f}%", delta="↓ 35% vs 2023")
+        st.metric("Inflation 2024", f"{val:.1f}%")
     with col3:
         val = df.loc[df["Année"] == 2024, "Recettes_fiscales_pct_PIB"].iloc[0]
-        st.metric("Recettes fiscales", f"{val:.1f}% PIB", delta="↑ 30% vs 2023")
+        st.metric("Recettes fiscales", f"{val:.1f}% PIB")
     with col4:
         dette = df.loc[df["Année"] == 2024, "Dette_exterieure_USD"].iloc[0] / 1e9
-        st.metric("Dette extérieure", f"{dette:.1f} Md$", delta="Stable")
+        st.metric("Dette extérieure", f"{dette:.1f} Md$")
     
-    st.markdown("""
-    Bienvenue sur le dashboard macroéconomique de la Mauritanie.  
-    Utilisez le **menu de gauche** pour explorer les différentes dimensions de l’économie.
-    """)
-    
-elif page == "📈 Croissance":
-    load_page("2_croissance")
-elif page == "🔥 Inflation":
-    load_page("3_inflation")
-elif page == "🌍 Secteur Extérieur":
-    load_page("4_secteur_exterieur")
+    st.markdown("Utilisez le menu de gauche pour explorer les sections.")
+
+elif page == "📈 Croissance & Cycles Économiques":
+    load_viz("1_croissance_pib_cycles")
+
+elif page == "📊 Stabilité des Prix (Inflation)":
+    load_viz("2_inflation_regimes")
+
+elif page == "🌍 Soutenabilité du Secteur Extérieur":
+    load_viz("3_dette_reserves")
+
 elif page == "🏛️ Finances Publiques":
-    load_page("5_finances_publiques")
-elif page == "👥 Chômage":
-    load_page("6_chomage")
-elif page == "💸 Envois de Fonds":
-    load_page("7_envois_fonds")
-elif page == "📊 Dette vs Réserves":
-    load_page("8_dette_reserves")
-elif page == "💹 Courbe de Phillips":
-    load_page("9_courbe_phillips")
-elif page == "🥧 Recettes fiscales 2024":
-    load_page("10_pie_2024")
-elif page == "🔥 Heatmap":
-    load_page("11_heatmap")
-elif page == "📚 Stackplot":
-    load_page("12_stackplot")
-elif page == "📦 Boxplot par Période":
-    load_page("13_boxplot_periodes")
-elif page == "📉 Volatilité":
-    load_page("11_volatilite")  # ou crée un fichier dédié
-elif page == "🎯 Régimes macro":
-    load_page("12_regimes_macro")
-elif page == "🎲 Trajectoire 3D":
-    load_page("13_trajectoire_3d")
-elif page == "💰 Recettes 3D":
-    load_page("14_recettes_3d")
+    load_viz("4_recettes_fiscales")
+
+elif page == "👥 Marché du Travail":
+    load_viz("5_chomage_barres")
+
+elif page == "💸 Flux Financiers Internationaux":
+    load_viz("6_envois_fonds")
+
+elif page == "🔍 Analyses Transversales":
+    st.subheader("Corrélations entre indicateurs")
+    load_viz("7_heatmap_correlation")
+    
+    st.subheader("Distribution par période")
+    load_viz("9_boxplot_periodes")
+    
+    st.subheader("Volatilité de la croissance")
+    load_viz("11_volatilite_croissance")
+
 elif page == "📚 Méthodologie":
-    load_page("14_methodologie")
+    load_viz("14_methodologie")
