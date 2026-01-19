@@ -1,20 +1,35 @@
-
+# app.py
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
+import os
 
+# -----------------------------
+# Configuration
+# -----------------------------
 st.set_page_config(
     page_title="🇲🇷 Dashboard Macroéconomique – Mauritanie",
     page_icon="🏦",
     layout="wide"
 )
 
+# -----------------------------
+# Chargement des données
+# -----------------------------
 @st.cache_data
 def load_and_clean_data():
-    df = pd.read_csv("macro_mauritanie_complet_1960_2024.csv")
+    # Gérer les deux cas : local et Streamlit Cloud
+    if os.path.exists("macro_mauritanie_complet_1960_2024.csv"):
+        df = pd.read_csv("macro_mauritanie_complet_1960_2024.csv")
+    else:
+        # Si le CSV est à la racine (comme sur Streamlit Cloud)
+        df = pd.read_csv("macro_mauritanie_complet_1960_2024.csv")
+    
     df["Année"] = df["Année"].astype(int)
     df = df.groupby("Année", as_index=False).first()
     df = df.sort_values("Année").reset_index(drop=True)
     
+    # Imputation
     df.loc[df["Année"] >= 1962, "Croissance_PIB_pct"] = df.loc[df["Année"] >= 1962, "Croissance_PIB_pct"].interpolate()
     df.loc[df["Année"] >= 1986, "Inflation_pct"] = df.loc[df["Année"] >= 1986, "Inflation_pct"].interpolate()
     df.loc[(df["Année"] >= 2007) & (df["Année"] <= 2024), "Recettes_fiscales_pct_PIB"] = df.loc[(df["Année"] >= 2007) & (df["Année"] <= 2024), "Recettes_fiscales_pct_PIB"].interpolate()
@@ -28,9 +43,43 @@ def load_and_clean_data():
     
     return df
 
-if 'df' not in st.session_state:
-    st.session_state.df = load_and_clean_data()
+# Charger les données
+df = load_and_clean_data()
 
+# -----------------------------
+# Menu latéral
+# -----------------------------
+st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/4/43/Flag_of_Mauritania.svg", width=60)
+st.sidebar.title("🧭 Navigation")
+
+page = st.sidebar.radio(
+    "Aller à la section :",
+    [
+        "🏠 Accueil",
+        "📈 Croissance",
+        "🔥 Inflation",
+        "🌍 Secteur Extérieur",
+        "🏛️ Finances Publiques",
+        "👥 Chômage",
+        "💸 Envois de Fonds",
+        "📊 Dette vs Réserves",
+        "💹 Courbe de Phillips",
+        "🥧 Recettes fiscales 2024",
+        "🔥 Heatmap",
+        "📚 Stackplot",
+        "📦 Boxplot par Période",
+        "📉 Volatilité",
+        "🎯 Régimes macro",
+        "🎲 Trajectoire 3D",
+        "💰 Recettes 3D",
+        "📚 Méthodologie"
+    ],
+    index=0
+)
+
+# -----------------------------
+# En-tête principal
+# -----------------------------
 col1, col2 = st.columns([1, 8])
 with col1:
     st.image("https://upload.wikimedia.org/wikipedia/commons/4/43/Flag_of_Mauritania.svg", width=80)
@@ -40,22 +89,74 @@ with col2:
 
 st.markdown("---")
 
-df = st.session_state.df
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    val = df.loc[df["Année"] == 2024, "Croissance_PIB_pct"].iloc[0]
-    st.metric("Croissance 2024", f"{val:.1f}%", delta="↑ 45% vs 2023")
-with col2:
-    val = df.loc[df["Année"] == 2024, "Inflation_pct"].iloc[0]
-    st.metric("Inflation 2024", f"{val:.1f}%", delta="↓ 35% vs 2023")
-with col3:
-    val = df.loc[df["Année"] == 2024, "Recettes_fiscales_pct_PIB"].iloc[0]
-    st.metric("Recettes fiscales", f"{val:.1f}% PIB", delta="↑ 30% vs 2023")
-with col4:
-    dette = df.loc[df["Année"] == 2024, "Dette_exterieure_USD"].iloc[0] / 1e9
-    st.metric("Dette extérieure", f"{dette:.1f} Md$", delta="Stable")
+# -----------------------------
+# Fonction pour charger et exécuter une page
+# -----------------------------
+def load_page(page_name):
+    """Charge et exécute le contenu d'une page depuis le dossier pages/"""
+    try:
+        with open(f"pages/{page_name}.py", "r", encoding="utf-8") as f:
+            code = f.read()
+            # Injecter df dans le namespace
+            exec(code, {"st": st, "pd": pd, "go": go, "df": df})
+    except FileNotFoundError:
+        st.error(f"Page non trouvée : {page_name}")
 
-st.markdown("""
-Bienvenue sur le dashboard macroéconomique de la Mauritanie.  
-Utilisez le **menu de gauche** pour explorer les différentes dimensions de l’économie.
-""")
+# -----------------------------
+# Affichage selon la page sélectionnée
+# -----------------------------
+if page == "🏠 Accueil":
+    # KPIs
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        val = df.loc[df["Année"] == 2024, "Croissance_PIB_pct"].iloc[0]
+        st.metric("Croissance 2024", f"{val:.1f}%", delta="↑ 45% vs 2023")
+    with col2:
+        val = df.loc[df["Année"] == 2024, "Inflation_pct"].iloc[0]
+        st.metric("Inflation 2024", f"{val:.1f}%", delta="↓ 35% vs 2023")
+    with col3:
+        val = df.loc[df["Année"] == 2024, "Recettes_fiscales_pct_PIB"].iloc[0]
+        st.metric("Recettes fiscales", f"{val:.1f}% PIB", delta="↑ 30% vs 2023")
+    with col4:
+        dette = df.loc[df["Année"] == 2024, "Dette_exterieure_USD"].iloc[0] / 1e9
+        st.metric("Dette extérieure", f"{dette:.1f} Md$", delta="Stable")
+    
+    st.markdown("""
+    Bienvenue sur le dashboard macroéconomique de la Mauritanie.  
+    Utilisez le **menu de gauche** pour explorer les différentes dimensions de l’économie.
+    """)
+    
+elif page == "📈 Croissance":
+    load_page("2_croissance")
+elif page == "🔥 Inflation":
+    load_page("3_inflation")
+elif page == "🌍 Secteur Extérieur":
+    load_page("4_secteur_exterieur")
+elif page == "🏛️ Finances Publiques":
+    load_page("5_finances_publiques")
+elif page == "👥 Chômage":
+    load_page("6_chomage")
+elif page == "💸 Envois de Fonds":
+    load_page("7_envois_fonds")
+elif page == "📊 Dette vs Réserves":
+    load_page("8_dette_reserves")
+elif page == "💹 Courbe de Phillips":
+    load_page("9_courbe_phillips")
+elif page == "🥧 Recettes fiscales 2024":
+    load_page("10_pie_2024")
+elif page == "🔥 Heatmap":
+    load_page("11_heatmap")
+elif page == "📚 Stackplot":
+    load_page("12_stackplot")
+elif page == "📦 Boxplot par Période":
+    load_page("13_boxplot_periodes")
+elif page == "📉 Volatilité":
+    load_page("11_volatilite")  # ou crée un fichier dédié
+elif page == "🎯 Régimes macro":
+    load_page("12_regimes_macro")
+elif page == "🎲 Trajectoire 3D":
+    load_page("13_trajectoire_3d")
+elif page == "💰 Recettes 3D":
+    load_page("14_recettes_3d")
+elif page == "📚 Méthodologie":
+    load_page("14_methodologie")
