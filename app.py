@@ -997,28 +997,46 @@ elif page == "📊 Analyses Avancées":
     """, unsafe_allow_html=True)
     
     tab1, tab2, tab3, tab4 = st.tabs(["🔥 Heatmap", "🎲 Trajectoire 3D", "📈 Multi-analyse", "📊 Régimes"])
-    
     with tab1:
-        # VIS 7: Heatmap de corrélation
-        st.markdown("### 🔥 Matrice de Corrélation")
-        corr_vars = ["Croissance_PIB_pct", "Inflation_pct", "Taux_chomage_pct", "Recettes_fiscales_pct_PIB"]
-        df_corr = df_filtered[corr_vars].dropna()
-        if len(df_corr) > 5:
-            corr = df_corr.corr()
-            fig = go.Figure()
-            fig.add_trace(go.Heatmap(
-                z=corr.values, x=corr.columns, y=corr.columns,
-                colorscale='Blues', text=corr.values,
-                texttemplate='%{text:.2f}', textfont={"size": 12},
-                hovertemplate='%{y} vs %{x}<br>Corrélation: %{z:.2f}<extra></extra>'
-            ))
-            fig.update_layout(
-                title="Corrélations entre indicateurs macroéconomiques (2007–2024)<br><sub>Source: Calculs propres</sub>",
-                height=500
+    st.markdown("### 🔥 Matrice de Corrélation")
+    corr_vars = ["Croissance_PIB_pct", "Inflation_pct", "Taux_chomage_pct", "Recettes_fiscales_pct_PIB"]
+    df_corr = df_filtered[corr_vars].dropna()
+    if len(df_corr) > 5:
+        corr = df_corr.corr()
+        
+        # Création du heatmap avec axes et colorbar visibles
+        fig = go.Figure(data=go.Heatmap(
+            z=corr.values,
+            x=corr.columns,
+            y=corr.columns,
+            colorscale='Blues',
+            text=np.round(corr.values, 2),
+            texttemplate='%{text}',
+            textfont={"size": 14, "family": "Inter"},
+            hovertemplate='%{y} vs %{x}<br>Corrélation: %{z:.2f}<extra></extra>',
+            colorbar=dict(
+                title="Corrélation",
+                thickness=30,
+                len=0.8,
+                tickmode="array",
+                tickvals=[-1, -0.5, 0, 0.5, 1],
+                ticktext=["-1.0", "-0.5", "0.0", "+0.5", "+1.0"],
+                title_font_size=12
             )
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
-        else:
-            st.info("📊 Données insuffisantes pour calculer les corrélations")
+        ))
+        
+        fig.update_layout(
+            title="Corrélations entre indicateurs macroéconomiques (2007–2024)<br><sub>Source: Calculs propres</sub>",
+            xaxis=dict(title="Indicateur", side="bottom"),
+            yaxis=dict(title="Indicateur", side="left"),
+            height=500,
+            font=dict(size=12),
+            margin=dict(l=100, r=100, t=100, b=100)
+        )
+        
+        st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+    else:
+        st.info("📊 Données insuffisantes pour calculer les corrélations (minimum 5 observations)")
     
     with tab2:
         # VIS 13: Trajectoire 3D
