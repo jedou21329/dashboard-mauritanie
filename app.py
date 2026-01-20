@@ -946,7 +946,7 @@ elif page == "📈 Croissance & Inflation":
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
                 xaxis=dict(title='Taux de Chômage (%)', showgrid=True, gridcolor='rgba(0,0,0,0.05)'),
-                yaxis=dict(title='Taux d'Inflation (%)', showgrid=True, gridcolor='rgba(0,0,0,0.05)'),
+                yaxis=dict(title="Taux d'Inflation (%)", showgrid=True, gridcolor='rgba(0,0,0,0.05)'),
                 height=500
             )
 
