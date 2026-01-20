@@ -542,15 +542,16 @@ if page == "📍 Vue d'ensemble":
         st.plotly_chart(fig, use_container_width=True, config=plotly_config)
 
 # ===========================
-# PAGE 2: CROISSANCE & INFLATION (AMÉLIORÉE)
+# PAGE 2: CROISSANCE & INFLATION
 # ===========================
 elif page == "📈 Croissance & Inflation":
+
     st.markdown("""
     <div class="hero-header">
-    <div class="hero-content">
-    <h1 class="hero-title">📈 Croissance & Inflation</h1>
-    <p class="hero-subtitle">Analyse des cycles économiques et dynamiques des prix</p>
-    </div>
+        <div class="hero-content">
+            <h1 class="hero-title">📈 Croissance & Inflation</h1>
+            <p class="hero-subtitle">Analyse des cycles économiques et dynamiques des prix</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -558,28 +559,37 @@ elif page == "📈 Croissance & Inflation":
         ["📊 Volatilité", "🔥 Distribution Inflation", "💹 Courbe de Phillips", "📦 Boxplot Périodes"]
     )
 
-    # -----------------------------------
-    # TAB 1 – VOLATILITÉ (inchangé)
-    # -----------------------------------
+    # =====================================================
+    # TAB 1 – VOLATILITÉ (INCHANGÉ)
+    # =====================================================
     with tab1:
         st.markdown("### 📉 Volatilité de la croissance du PIB")
+
         df_pib = df_filtered.dropna(subset=["Croissance_PIB_pct"])
+
         if len(df_pib) > 10:
             mean = df_pib["Croissance_PIB_pct"].rolling(10).mean()
             std = df_pib["Croissance_PIB_pct"].rolling(10).std()
 
             fig = go.Figure()
+
             fig.add_trace(go.Scatter(
-                x=df_pib["Année"], y=mean,
-                line=dict(color=BLEU_FONCE, width=3),
-                name="Moyenne mobile (10 ans)"
+                x=df_pib["Année"],
+                y=mean,
+                name="Moyenne mobile (10 ans)",
+                line=dict(color=BLEU_FONCE, width=3)
             ))
+
             fig.add_trace(go.Scatter(
-                x=df_pib["Année"], y=mean + std,
-                line=dict(width=0), showlegend=False
+                x=df_pib["Année"],
+                y=mean + std,
+                line=dict(width=0),
+                showlegend=False
             ))
+
             fig.add_trace(go.Scatter(
-                x=df_pib["Année"], y=mean - std,
+                x=df_pib["Année"],
+                y=mean - std,
                 fill="tonexty",
                 fillcolor="rgba(174,199,232,0.4)",
                 line=dict(width=0),
@@ -592,125 +602,133 @@ elif page == "📈 Croissance & Inflation":
                 height=450
             )
             fig.update_yaxes(title="%")
+
             st.plotly_chart(fig, use_container_width=True, config=plotly_config)
 
-# -----------------------------------
-# TAB 2 – DISTRIBUTION DE L’INFLATION (PRO)
-# -----------------------------------
-with tab2:
-    st.markdown("### 🔥 Distribution Inflation")
+    # =====================================================
+    # TAB 2 – DISTRIBUTION DE L’INFLATION (PROFESSIONNELLE)
+    # =====================================================
+    with tab2:
+        st.markdown("### 🔥 Distribution Inflation")
 
-    df_inf = df_filtered.dropna(subset=["Inflation_pct"])
+        df_inf = df_filtered.dropna(subset=["Inflation_pct"])
 
-    if len(df_inf) > 0:
-        col1, col2 = st.columns([3, 1])
+        if len(df_inf) > 0:
+            col1, col2 = st.columns([3, 1])
 
-        # --- Courbe de densité (KDE) ---
-        with col1:
-            fig = go.Figure()
+            # --- Densité + moyenne ---
+            with col1:
+                fig = go.Figure()
 
-            fig.add_trace(go.Histogram(
-                x=df_inf["Inflation_pct"],
-                histnorm="probability density",
-                nbinsx=30,
-                marker_color=BLEU_TRES_CLAIR,
-                opacity=0.6,
-                showlegend=False
-            ))
+                fig.add_trace(go.Histogram(
+                    x=df_inf["Inflation_pct"],
+                    histnorm="probability density",
+                    nbinsx=30,
+                    marker_color=BLEU_TRES_CLAIR,
+                    opacity=0.6,
+                    showlegend=False
+                ))
 
-            fig.add_trace(go.Scatter(
-                x=np.sort(df_inf["Inflation_pct"]),
-                y=np.exp(
-                    -0.5 * ((np.sort(df_inf["Inflation_pct"]) -
-                             df_inf["Inflation_pct"].mean()) /
-                            df_inf["Inflation_pct"].std())**2
-                ) / (df_inf["Inflation_pct"].std() * np.sqrt(2 * np.pi)),
-                line=dict(color=BLEU_FONCE, width=3),
-                name="Densité"
-            ))
+                fig.add_trace(go.Scatter(
+                    x=np.sort(df_inf["Inflation_pct"]),
+                    y=np.exp(
+                        -0.5 * (
+                            (np.sort(df_inf["Inflation_pct"]) - df_inf["Inflation_pct"].mean())
+                            / df_inf["Inflation_pct"].std()
+                        ) ** 2
+                    ) / (df_inf["Inflation_pct"].std() * np.sqrt(2 * np.pi)),
+                    line=dict(color=BLEU_FONCE, width=3),
+                    name="Densité"
+                ))
 
-            fig.add_vline(
-                x=df_inf["Inflation_pct"].mean(),
-                line=dict(color=BLEU_MOYEN, dash="dash"),
-                annotation_text="Moyenne",
-                annotation_position="top"
-            )
+                fig.add_vline(
+                    x=df_inf["Inflation_pct"].mean(),
+                    line=dict(color=BLEU_MOYEN, dash="dash"),
+                    annotation_text="Moyenne",
+                    annotation_position="top"
+                )
 
-            fig = apply_plotly_theme(
-                fig,
-                "Distribution de l’inflation<br><sub>Source : BCM</sub>",
-                height=420
-            )
-            fig.update_xaxes(title="Inflation (%)")
-            fig.update_yaxes(title="Densité")
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+                fig = apply_plotly_theme(
+                    fig,
+                    "Distribution de l’inflation<br><sub>Source : BCM</sub>",
+                    height=420
+                )
+                fig.update_xaxes(title="Inflation (%)")
+                fig.update_yaxes(title="Densité")
 
-        # --- Boxplot vertical sobre ---
-        with col2:
-            fig = go.Figure()
-            fig.add_trace(go.Box(
-                y=df_inf["Inflation_pct"],
-                marker_color=BLEU_FONCE,
-                boxmean=True
-            ))
+                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
 
-            fig = apply_plotly_theme(
-                fig,
-                "Résumé statistique",
-                height=420
-            )
-            fig.update_yaxes(title="Inflation (%)")
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+            # --- Boxplot vertical sobre ---
+            with col2:
+                fig = go.Figure()
 
+                fig.add_trace(go.Box(
+                    y=df_inf["Inflation_pct"],
+                    marker_color=BLEU_FONCE,
+                    boxmean=True
+                ))
 
-    # -----------------------------------
-    # TAB 3 – COURBE DE PHILLIPS (REDIMENSIONNÉE)
-    # -----------------------------------
+                fig = apply_plotly_theme(
+                    fig,
+                    "Résumé statistique",
+                    height=420
+                )
+                fig.update_yaxes(title="Inflation (%)")
+
+                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+
+    # =====================================================
+    # TAB 3 – COURBE DE PHILLIPS (TOUTES LES ANNÉES)
+    # =====================================================
     with tab3:
         st.markdown("### 💹 Courbe de Phillips – Mauritanie")
 
-        df_ph = df_filtered.dropna(subset=["Inflation_pct", "Taux_chomage_pct"])
+        df_ph = df_filtered.dropna(
+            subset=["Inflation_pct", "Taux_chomage_pct", "Année"]
+        )
 
         if len(df_ph) > 0:
             fig = go.Figure()
+
             fig.add_trace(go.Scatter(
                 x=df_ph["Taux_chomage_pct"],
                 y=df_ph["Inflation_pct"],
                 mode="markers",
                 text=df_ph["Année"],
                 marker=dict(
-                    size=10,
+                    size=9,
                     color=df_ph["Année"],
                     colorscale="Blues",
                     showscale=True,
                     colorbar=dict(
                         title="Année",
                         thickness=12,
-                        len=0.7
-                    )
+                        len=0.75
+                    ),
+                    line=dict(color=BLEU_FONCE, width=0.5)
                 ),
                 hovertemplate=(
-                    "Année: %{text}<br>"
-                    "Chômage: %{x:.1f}%<br>"
-                    "Inflation: %{y:.1f}%<extra></extra>"
+                    "Année : %{text}<br>"
+                    "Chômage : %{x:.1f}%<br>"
+                    "Inflation : %{y:.1f}%<extra></extra>"
                 )
             ))
 
             fig = apply_plotly_theme(
                 fig,
-                "Courbe de Phillips – Mauritanie (2007–2021)<br><sub>Source : BCM</sub>",
-                height=350
+                "Courbe de Phillips – Mauritanie<br><sub>Source : BCM</sub>",
+                height=430
             )
             fig.update_xaxes(title="Chômage (%)")
             fig.update_yaxes(title="Inflation (%)")
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
 
+            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
         else:
             st.info("📊 Données insuffisantes pour la courbe de Phillips")
 
-    # -----------------------------------
-    # TAB 4 – BOXPLOT PAR PÉRIODE (STYLE SEABORN)
-    # -----------------------------------
+    # =====================================================
+    # TAB 4 – BOXPLOT PAR PÉRIODE (VALIDÉ – INCHANGÉ)
+    # =====================================================
     with tab4:
         st.markdown("### 📦 Distribution de la croissance du PIB par période")
 
@@ -739,7 +757,9 @@ with tab2:
             height=480
         )
         fig.update_yaxes(title="Croissance (%)")
+
         st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+
 
 # ===================================== 
 # PAGE 3: SECTEUR EXTERNE
