@@ -627,24 +627,9 @@ if len(df_infl) > 0:
             height=350
         )
         st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
-else:
-    st.info("📊 Pas de données disponibles pour cette période")
+   else:
+        st.info("📊 Pas de données disponibles pour cette période")
             
-            with col2:
-                fig = go.Figure()
-                fig.add_trace(go.Box(
-                    y=df_infl["Inflation_pct"],
-                    marker_color=BLEU_MOYEN,
-                    name='Inflation',
-                    hovertemplate='%{y:.2f}%<extra></extra>'
-                ))
-                fig.update_layout(
-                    title="Statistiques descriptives<br><sub>Source: BCM</sub>",
-                    yaxis_title="Inflation (%)",
-                    plot_bgcolor='rgba(0,0,0,0)', height=400, showlegend=False
-                )
-                fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
     
     with tab3:
         # VIS 5: Courbe de Phillips
