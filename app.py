@@ -787,13 +787,13 @@ elif page == "🌐 Secteur Externe":
         fig.add_trace(go.Scatter(
             x=df_ext["Année"], y=df_ext["Dette_exterieure_USD"]/1e9,
             mode='lines', name='Dette extérieure',
-            line=dict(color=ROUGE, width=3),
+            line=dict(color=BLEU_FONCE, width=3),
             hovertemplate='<b>%{x}</b><br>%{y:.2f} Md$<extra></extra>'
         ))
         fig.add_trace(go.Scatter(
             x=df_ext["Année"], y=df_ext["Reserves_internationales_USD"]/1e9,
             mode='lines', name='Réserves',
-            line=dict(color=VERT, width=3),
+            line=dict(color=BLEU_MOYEN, width=3),
             hovertemplate='<b>%{x}</b><br>%{y:.2f} Md$<extra></extra>'
         ))
         
