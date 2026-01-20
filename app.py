@@ -594,53 +594,74 @@ elif page == "📈 Croissance & Inflation":
             fig.update_yaxes(title="%")
             st.plotly_chart(fig, use_container_width=True, config=plotly_config)
 
-    # -----------------------------------
-    # TAB 2 – DISTRIBUTION DE L’INFLATION (AMÉLIORÉ)
-    # -----------------------------------
-    with tab2:
-        st.markdown("### 🔥 Distribution de l’Inflation")
+# -----------------------------------
+# TAB 2 – DISTRIBUTION DE L’INFLATION (PRO)
+# -----------------------------------
+with tab2:
+    st.markdown("### 🔥 Distribution Inflation")
 
-        df_inf = df_filtered.dropna(subset=["Inflation_pct"])
+    df_inf = df_filtered.dropna(subset=["Inflation_pct"])
 
-        if len(df_inf) > 0:
-            col1, col2 = st.columns(2)
+    if len(df_inf) > 0:
+        col1, col2 = st.columns([3, 1])
 
-            # Histogramme amélioré
-            with col1:
-                fig = go.Figure()
-                fig.add_trace(go.Histogram(
-                    x=df_inf["Inflation_pct"],
-                    nbinsx=25,
-                    marker_color=BLEU_MOYEN,
-                    opacity=0.85
-                ))
+        # --- Courbe de densité (KDE) ---
+        with col1:
+            fig = go.Figure()
 
-                fig = apply_plotly_theme(
-                    fig,
-                    "Histogramme de l’inflation<br><sub>Source : BCM</sub>",
-                    height=380
-                )
-                fig.update_xaxes(title="Inflation (%)")
-                fig.update_yaxes(title="Fréquence")
-                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+            fig.add_trace(go.Histogram(
+                x=df_inf["Inflation_pct"],
+                histnorm="probability density",
+                nbinsx=30,
+                marker_color=BLEU_TRES_CLAIR,
+                opacity=0.6,
+                showlegend=False
+            ))
 
-            # Boxplot horizontal (propre)
-            with col2:
-                fig = go.Figure()
-                fig.add_trace(go.Box(
-                    x=df_inf["Inflation_pct"],
-                    orientation="h",
-                    marker_color=BLEU_FONCE,
-                    boxmean=True
-                ))
+            fig.add_trace(go.Scatter(
+                x=np.sort(df_inf["Inflation_pct"]),
+                y=np.exp(
+                    -0.5 * ((np.sort(df_inf["Inflation_pct"]) -
+                             df_inf["Inflation_pct"].mean()) /
+                            df_inf["Inflation_pct"].std())**2
+                ) / (df_inf["Inflation_pct"].std() * np.sqrt(2 * np.pi)),
+                line=dict(color=BLEU_FONCE, width=3),
+                name="Densité"
+            ))
 
-                fig = apply_plotly_theme(
-                    fig,
-                    "Statistiques descriptives<br><sub>Source : BCM</sub>",
-                    height=380
-                )
-                fig.update_xaxes(title="Inflation (%)")
-                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+            fig.add_vline(
+                x=df_inf["Inflation_pct"].mean(),
+                line=dict(color=BLEU_MOYEN, dash="dash"),
+                annotation_text="Moyenne",
+                annotation_position="top"
+            )
+
+            fig = apply_plotly_theme(
+                fig,
+                "Distribution de l’inflation<br><sub>Source : BCM</sub>",
+                height=420
+            )
+            fig.update_xaxes(title="Inflation (%)")
+            fig.update_yaxes(title="Densité")
+            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+
+        # --- Boxplot vertical sobre ---
+        with col2:
+            fig = go.Figure()
+            fig.add_trace(go.Box(
+                y=df_inf["Inflation_pct"],
+                marker_color=BLEU_FONCE,
+                boxmean=True
+            ))
+
+            fig = apply_plotly_theme(
+                fig,
+                "Résumé statistique",
+                height=420
+            )
+            fig.update_yaxes(title="Inflation (%)")
+            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+
 
     # -----------------------------------
     # TAB 3 – COURBE DE PHILLIPS (REDIMENSIONNÉE)
