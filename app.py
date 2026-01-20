@@ -704,13 +704,13 @@ elif page == "📈 Croissance & Inflation":
                     showscale=True,
                     colorbar=dict(
                         title="Année",
-                        thickness=22,
+                        thickness=32,
                         len=0.85,
                         tickmode="array",
                         tickvals=years[::2],
                         ticktext=[str(y) for y in years[::2]]
                     ),
-                    line=dict(color=BLEU_FONCE, width=0.5)
+                    line=dict(color=BLEU_FONCE, width=0.4)
                 ),
                 hovertemplate=(
                     "Année : %{text}<br>"
