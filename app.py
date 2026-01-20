@@ -598,38 +598,37 @@ elif page == "📈 Croissance & Inflation":
         df_infl = df_filtered.dropna(subset=['Inflation_pct']).copy()
         if len(df_infl) > 0:
             col1, col2 = st.columns(2)
-            
             with col1:
-                fig = go.Figure()
-                fig.add_trace(go.Histogram(
-                    x=df_infl["Inflation_pct"], nbinsx=20,
-                    marker_color=BLEU_MOYEN, opacity=0.8,
-                    hovertemplate='Inflation: %{x:.1f}%<br>Fréquence: %{y}<extra></extra>'
+                fig_hist = go.Figure()
+                fig_hist.add_trace(go.Histogram(
+                    x=df_infl["Inflation_pct"],
+                    nbinsx=20,
+                    marker=dict(color=BLEU_MOYEN, line=dict(color='white', width=1))
                 ))
-                fig.update_layout(
-                    title="Distribution de l'inflation<br><sub>Source: BCM</sub>",
-                    xaxis_title="Inflation (%)", yaxis_title="Fréquence",
-                    plot_bgcolor='rgba(0,0,0,0)', height=400
+                fig_hist.update_layout(
+                    title="Distribution de l'inflation",
+                    xaxis_title="Inflation (%)",
+                    yaxis_title="Fréquence",
+                    height=350
                 )
-                fig.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-                fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+                st.plotly_chart(fig_hist, use_container_width=True, config={'displayModeBar': False})
             
             with col2:
-                fig = go.Figure()
-                fig.add_trace(go.Box(
+                fig_box = go.Figure()
+                fig_box.add_trace(go.Box(
                     y=df_infl["Inflation_pct"],
-                    marker_color=BLEU_MOYEN,
-                    name='Inflation',
-                    hovertemplate='%{y:.2f}%<extra></extra>'
+                    marker_color=BLEU_FONCE,
+                    boxmean='sd',
+                    fillcolor=BLEU_CLAIR
                 ))
-                fig.update_layout(
-                    title="Statistiques descriptives<br><sub>Source: BCM</sub>",
+                fig_box.update_layout(
+                    title="Statistiques descriptives",
                     yaxis_title="Inflation (%)",
-                    plot_bgcolor='rgba(0,0,0,0)', height=400, showlegend=False
+                    height=350
                 )
-                fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+                st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
+        else:
+            st.info("📊 Pas de données disponibles pour cette période")
     
     with tab3:
         # VIS 5: Courbe de Phillips
