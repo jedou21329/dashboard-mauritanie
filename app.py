@@ -1040,7 +1040,7 @@ elif page == "📊 Analyses Avancées":
                 colorbar=dict(
                     title="Corrélation",
                     thickness=30,
-                    len=0.8,
+                    len=1,
                     tickmode="array",
                     tickvals=[-1, -0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8, 1],
                     ticktext=["-1", "-0.8","-0.6","-0.4","-0.2","0","+0.2","+0.4","+0.6","+0.8", "+1"],
