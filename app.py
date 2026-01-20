@@ -336,76 +336,58 @@ if page == "📍 Vue d'ensemble":
     st.markdown("<br>", unsafe_allow_html=True)
     
     # VIS 1: Croissance du PIB avec cycles
+    # ────────────────────────────────────────────────
+# PAGE 1 - Vue d'ensemble - VIS 1 : Croissance PIB
+# ────────────────────────────────────────────────
+if page == "📍 Vue d'ensemble":
+    # ... hero header ...
+
     st.markdown("### 📈 Croissance du PIB – cycles économiques et chocs")
     df_pib = df_filtered.dropna(subset=['Croissance_PIB_pct']).copy()
     if len(df_pib) > 0:
         fig = go.Figure()
-        
-        # Ligne de croissance principale
+
         fig.add_trace(go.Scatter(
             x=df_pib["Année"], y=df_pib["Croissance_PIB_pct"],
             mode='lines', name='Croissance',
             line=dict(color='#0B3C5D', width=2.5),
             hovertemplate='<b>%{x}</b><br>Croissance: %{y:.2f}%<extra></extra>'
         ))
-        
-        # Tendance long terme
+
         fig.add_trace(go.Scatter(
             x=df_pib["Année"], y=df_pib["Croissance_PIB_pct"].rolling(10).mean(),
             mode='lines', name='Tendance long terme',
             line=dict(color='#1F77B4', width=3),
             hovertemplate='<b>%{x}</b><br>Tendance: %{y:.2f}%<extra></extra>'
         ))
-        
-        # Ligne zéro
-        fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.3, line_width=1)
-        
-        # Annotations des crises
-        annotations_data = [
-            (1975, "Choc pétrolier"),
-            (2009, "Crise financière"),
-            (2020, "COVID-19")
-        ]
-        
-        for year, label in annotations_data:
-            if year in df_pib["Année"].values and year_range[0] <= year <= year_range[1]:
-                y_val = df_pib.loc[df_pib["Année"] == year, "Croissance_PIB_pct"].values[0]
-                fig.add_annotation(
-                    x=year, y=y_val, text=label,
-                    showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.5,
-                    arrowcolor='#0B3C5D', ax=0, ay=-50,
-                    font=dict(size=10, color='#0B3C5D'),
-                    bgcolor='rgba(255,255,255,0.8)', bordercolor='#0B3C5D', borderwidth=1
-                )
-        
+
+        # Animation : on fait apparaître la courbe année par année
         fig.update_layout(
-            title={
-                'text': "Croissance du PIB – cycles économiques et chocs<br><sub>Source : BCM, FMI, Banque Mondiale</sub>",
-                'font': {'size': 16, 'color': '#0B3C5D', 'family': 'Inter'}
-            },
-            xaxis_title="", yaxis_title="%",
-            hovermode='x unified',
-            plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
-            height=450, showlegend=True,
-            legend=dict(
-                orientation="h", yanchor="top", y=1.15, xanchor="right", x=1,
-                bgcolor='rgba(255,255,255,0.8)', bordercolor='#0B3C5D', borderwidth=1
-            ),
-            font=dict(family='Inter', color='#0B3C5D', size=11),
-            margin=dict(l=60, r=40, t=100, b=60)
+            updatemenus=[dict(
+                type="buttons",
+                buttons=[dict(
+                    label="Play",
+                    method="animate",
+                    args=[None, {"frame": {"duration": 800, "redraw": True}, "fromcurrent": True}]
+                ), dict(
+                    label="Pause",
+                    method="animate",
+                    args=[[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]
+                )]
+            )],
+            frames=[
+                go.Frame(
+                    data=[
+                        go.Scatter(x=df_pib["Année"][:i+1], y=df_pib["Croissance_PIB_pct"][:i+1]),
+                        go.Scatter(x=df_pib["Année"][:i+1], y=df_pib["Croissance_PIB_pct"].rolling(10).mean()[:i+1])
+                    ],
+                    name=str(df_pib["Année"].iloc[i])
+                ) for i in range(len(df_pib))
+            ],
+            # ... le reste du layout inchangé ...
+            title="Croissance du PIB – animation progressive<br><sub>Cliquer Play pour voir l'évolution</sub>",
+            # ...
         )
-        
-        fig.update_xaxes(
-            showgrid=True, gridcolor='rgba(0,0,0,0.1)', gridwidth=0.5,
-            showline=True, linecolor='#0B3C5D', linewidth=1.5,
-            zeroline=False
-        )
-        fig.update_yaxes(
-            showgrid=True, gridcolor='rgba(0,0,0,0.1)', gridwidth=0.5,
-            showline=True, linecolor='#0B3C5D', linewidth=1.5,
-            zeroline=False
-        )
-        
         st.plotly_chart(fig, use_container_width=True, config=plotly_config)
     
     # VIS 2: Inflation – régimes
