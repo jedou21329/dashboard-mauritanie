@@ -1067,11 +1067,16 @@ elif page == "📊 Analyses Avancées":
                 font=dict(size=12),
                 margin=dict(l=100, r=100, t=100, b=100)
             )
+            
+            # Affichage du graphique
+            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
         
-        st.plotly_chart(fig, use_container_width=True, config=plotly_config)
-    else:
-        st.info("📊 Données insuffisantes pour calculer les corrélations (minimum 5 observations)")
+        else:  # CE ELSE DOIT ÊTRE DANS LE BLOC with tab1:
+            st.info("📊 Données insuffisantes pour calculer les corrélations (minimum 5 observations)")
     
+    # ============================================================================
+    # ONGLET 2 : Trajectoire 3D
+    # ============================================================================
     with tab2:
         # VIS 13: Trajectoire 3D
         st.markdown("### 🎲 Trajectoire Macroéconomique 3D")
@@ -1107,6 +1112,9 @@ elif page == "📊 Analyses Avancées":
         else:
             st.info("📊 Données insuffisantes pour la visualisation 3D")
     
+    # ============================================================================
+    # ONGLET 3 : Multi-analyse
+    # ============================================================================
     with tab3:
         # VIS 8: Stackplot – Pression macro
         st.markdown("### 📈 Pression Macroéconomique")
@@ -1137,6 +1145,9 @@ elif page == "📊 Analyses Avancées":
         else:
             st.info("📊 Pas de données disponibles")
     
+    # ============================================================================
+    # ONGLET 4 : Régimes fiscaux
+    # ============================================================================
     with tab4:
         # VIS 12: Régimes macro (scatter)
         st.markdown("### 📊 Régimes Macroéconomiques (Inflation vs Croissance)")
