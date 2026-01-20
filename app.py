@@ -831,7 +831,7 @@ elif page == "🌐 Secteur Externe":
     st.markdown("### 📦 Solde Commercial (% du PIB)")
     df_bc = df_filtered.dropna(subset=["Solde_commercial_pct_PIB"])
     if len(df_bc) > 0:
-        colors = [VERT if x >= 0 else ROUGE for x in df_bc["Solde_commercial_pct_PIB"]]
+        colors = [BLEU_FONCE if x >= 0 else ROUGE for x in df_bc["Solde_commercial_pct_PIB"]]
         fig = go.Figure()
         fig.add_trace(go.Bar(
             x=df_bc["Année"], y=df_bc["Solde_commercial_pct_PIB"],
