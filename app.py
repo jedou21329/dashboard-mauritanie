@@ -987,52 +987,86 @@ elif page == "💼 Finances Publiques":
 # PAGE 5: ANALYSES AVANCÉES
 # =====================================
 elif page == "📊 Analyses Avancées":
+    # En-tête principal
     st.markdown("""
     <div class="hero-header">
-    <div class="hero-content">
-    <h1 class="hero-title">📊 Analyses Avancées</h1>
-    <p class="hero-subtitle">Corrélations, trajectoires 3D et analyses multidimensionnelles</p>
-    </div>
+        <div class="hero-content">
+            <h1 class="hero-title">📊 Analyses Avancées</h1>
+            <p class="hero-subtitle">Corrélations, trajectoires 3D et analyses multidimensionnelles</p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
-    tab1, tab2, tab3, tab4 = st.tabs(["🔥 Heatmap", "🎲 Trajectoire 3D", "📈 Multi-analyse", "📊 Régimes"])
+    # Système d'onglets
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🔥 Heatmap de corrélation",
+        "🎲 Trajectoire 3D",
+        "📈 Multi-analyse",
+        "📊 Régimes fiscaux"
+    ])
+    
+    # ============================================================================
+    # ONGLET 1 : Heatmap de corrélation
+    # ============================================================================
     with tab1:
-    st.markdown("### 🔥 Matrice de Corrélation")
-    corr_vars = ["Croissance_PIB_pct", "Inflation_pct", "Taux_chomage_pct", "Recettes_fiscales_pct_PIB"]
-    df_corr = df_filtered[corr_vars].dropna()
-    if len(df_corr) > 5:
-        corr = df_corr.corr()
+        st.markdown("### 🔥 Matrice de Corrélation")
         
-        # Création du heatmap avec axes et colorbar visibles
-        fig = go.Figure(data=go.Heatmap(
-            z=corr.values,
-            x=corr.columns,
-            y=corr.columns,
-            colorscale='Blues',
-            text=np.round(corr.values, 2),
-            texttemplate='%{text}',
-            textfont={"size": 14, "family": "Inter"},
-            hovertemplate='%{y} vs %{x}<br>Corrélation: %{z:.2f}<extra></extra>',
-            colorbar=dict(
-                title="Corrélation",
-                thickness=30,
-                len=0.8,
-                tickmode="array",
-                tickvals=[-1, -0.5, 0, 0.5, 1],
-                ticktext=["-1.0", "-0.5", "0.0", "+0.5", "+1.0"],
-                title_font_size=12
+        # Variables sélectionnées pour la corrélation
+        corr_vars = [
+            "Croissance_PIB_pct", 
+            "Inflation_pct", 
+            "Taux_chomage_pct", 
+            "Recettes_fiscales_pct_PIB"
+        ]
+        
+        # Préparation des données
+        df_corr = df_filtered[corr_vars].dropna()
+        
+        # Vérification de la taille des données avant traitement
+        if len(df_corr) > 5:
+            # Calcul de la matrice de corrélation
+            corr = df_corr.corr()
+            
+            # Configuration du heatmap
+            heatmap_data = go.Heatmap(
+                z=corr.values,
+                x=corr.columns,
+                y=corr.columns,
+                colorscale='Blues',
+                text=np.round(corr.values, 2),
+                texttemplate='%{text}',
+                textfont={"size": 14, "family": "Inter"},
+                hovertemplate='%{y} vs %{x}<br>Corrélation: %{z:.2f}<extra></extra>',
+                colorbar=dict(
+                    title="Corrélation",
+                    thickness=30,
+                    len=0.8,
+                    tickmode="array",
+                    tickvals=[-1, -0.5, 0, 0.5, 1],
+                    ticktext=["-1.0", "-0.5", "0.0", "+0.5", "+1.0"],
+                    title_font_size=12
+                )
             )
-        ))
-        
-        fig.update_layout(
-            title="Corrélations entre indicateurs macroéconomiques (2007–2024)<br><sub>Source: Calculs propres</sub>",
-            xaxis=dict(title="Indicateur", side="bottom"),
-            yaxis=dict(title="Indicateur", side="left"),
-            height=500,
-            font=dict(size=12),
-            margin=dict(l=100, r=100, t=100, b=100)
-        )
+            
+            # Création de la figure
+            fig = go.Figure(data=heatmap_data)
+            
+            # Configuration du layout
+            fig.update_layout(
+                title="Corrélations entre indicateurs macroéconomiques (2007–2024)<br><sub>Source: Calculs propres</sub>",
+                xaxis=dict(
+                    title="Indicateur", 
+                    side="bottom",
+                    tickangle=45
+                ),
+                yaxis=dict(
+                    title="Indicateur", 
+                    side="left"
+                ),
+                height=500,
+                font=dict(size=12),
+                margin=dict(l=100, r=100, t=100, b=100)
+            )
         
         st.plotly_chart(fig, use_container_width=True, config=plotly_config)
     else:
