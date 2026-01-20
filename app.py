@@ -704,11 +704,11 @@ elif page == "📈 Croissance & Inflation":
                     showscale=True,
                     colorbar=dict(
                         title="Année",
-                        thickness=22,
-                        len=0.85,
+                        thickness=12,
+                        len=0.75,
                         tickmode="array",
-                        tickvals=[2000, 2005, 2010, 2015, 2020],
-                        ticktext=[str(y) for y in [2000, 2005, 2010, 2015, 2020]]
+                        tickvals=years[::2],
+                        ticktext=[str(y) for y in years[::2]]
                     ),
                     line=dict(color=BLEU_FONCE, width=0.5)
                 ),
