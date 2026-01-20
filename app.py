@@ -695,15 +695,21 @@ elif page == "📈 Croissance & Inflation":
                 y=df_ph["Inflation_pct"],
                 mode="markers",
                 text=df_ph["Année"],
+                years = df_ph["Année"].sort_values().unique(),
                 marker=dict(
                     size=9,
                     color=df_ph["Année"],
                     colorscale="Blues",
+                    cmin=years.min(),
+                    cmax=years.max(),
                     showscale=True,
                     colorbar=dict(
                         title="Année",
-                        thickness=12,
-                        len=0.75
+                        thickness=22,
+                        len=0.85,
+                        tickmode="array",
+                        tickvals=years[::2],
+                        ticktext=[str(y) for y in years[::2]]
                     ),
                     line=dict(color=BLEU_FONCE, width=0.5)
                 ),
