@@ -689,13 +689,12 @@ elif page == "📈 Croissance & Inflation":
 
         if len(df_ph) > 0:
             fig = go.Figure()
-
+            years = df_ph["Année"].sort_values().unique()
             fig.add_trace(go.Scatter(
                 x=df_ph["Taux_chomage_pct"],
                 y=df_ph["Inflation_pct"],
                 mode="markers",
                 text=df_ph["Année"],
-                years = df_ph["Année"].sort_values().unique(),
                 marker=dict(
                     size=9,
                     color=df_ph["Année"],
@@ -708,7 +707,7 @@ elif page == "📈 Croissance & Inflation":
                         thickness=22,
                         len=0.85,
                         tickmode="array",
-                        tickvals=years[::2],
+                        tickvals=[2000, 2005, 2010, 2015, 2020],
                         ticktext=[str(y) for y in years[::2]]
                     ),
                     line=dict(color=BLEU_FONCE, width=0.5)
