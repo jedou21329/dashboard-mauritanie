@@ -708,7 +708,7 @@ elif page == "📈 Croissance & Inflation":
                         len=0.85,
                         tickmode="array",
                         tickvals=[2000, 2005, 2010, 2015, 2020],
-                        ticktext=[str(y) for y in years[::2]]
+                        ticktext=[str(y) for y in [2000, 2005, 2010, 2015, 2020]]
                     ),
                     line=dict(color=BLEU_FONCE, width=0.5)
                 ),
