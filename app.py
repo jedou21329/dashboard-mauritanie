@@ -704,8 +704,8 @@ elif page == "📈 Croissance & Inflation":
                     showscale=True,
                     colorbar=dict(
                         title="Année",
-                        thickness=32,
-                        len=0.85,
+                        thickness=12,
+                        len=0.95,
                         tickmode="array",
                         tickvals=years[::2],
                         ticktext=[str(y) for y in years[::2]]
