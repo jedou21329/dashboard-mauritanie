@@ -678,7 +678,7 @@ elif page == "📈 Croissance & Inflation":
             fig = apply_plotly_theme(
                 fig,
                 "Courbe de Phillips – Mauritanie (2007–2021)<br><sub>Source : BCM</sub>",
-                height=420
+                height=350
             )
             fig.update_xaxes(title="Chômage (%)")
             fig.update_yaxes(title="Inflation (%)")
