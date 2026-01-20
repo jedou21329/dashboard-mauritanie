@@ -595,17 +595,17 @@ elif page == "📈 Croissance & Inflation":
     
     with tab2:
         st.markdown("### 🔥 Distribution de l'Inflation")
-df_infl = df_filtered.dropna(subset=['Inflation_pct']).copy()
-if len(df_infl) > 0:
-    col1, col2 = st.columns(2)
-    with col1:
-        fig_hist = go.Figure()
-        fig_hist.add_trace(go.Histogram(
-            x=df_infl["Inflation_pct"],
-            nbinsx=20,
-            marker=dict(color=BLEU_MOYEN, line=dict(color='white', width=1))
-        ))
-        fig_hist.update_layout(
+        df_infl = df_filtered.dropna(subset=['Inflation_pct']).copy()
+         if len(df_infl) > 0:
+           col1, col2 = st.columns(2)
+           with col1:
+                  fig_hist = go.Figure()
+                  fig_hist.add_trace(go.Histogram(
+                  x=df_infl["Inflation_pct"],
+                  nbinsx=20,
+                  marker=dict(color=BLEU_MOYEN, line=dict(color='white', width=1))
+                  ))
+            fig_hist.update_layout(
             title="Distribution de l'inflation",
             xaxis_title="Inflation (%)",
             yaxis_title="Fréquence",
@@ -613,22 +613,22 @@ if len(df_infl) > 0:
         )
         st.plotly_chart(fig_hist, use_container_width=True, config={'displayModeBar': False})
         
-    with col2:
-        fig_box = go.Figure()
-        fig_box.add_trace(go.Box(
+         with col2:
+          fig_box = go.Figure()
+          fig_box.add_trace(go.Box(
             y=df_infl["Inflation_pct"],
             marker_color=BLEU_FONCE,
             boxmean='sd',
             fillcolor=BLEU_CLAIR
-        ))
-        fig_box.update_layout(
+           ))
+          fig_box.update_layout(
             title="Statistiques descriptives",
             yaxis_title="Inflation (%)",
             height=350
         )
         st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
-   else:
-        st.info("📊 Pas de données disponibles pour cette période")
+else:
+    st.info("📊 Pas de données disponibles pour cette période")
             
     
     with tab3:
