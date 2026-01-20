@@ -916,11 +916,17 @@ elif page == "💼 Finances Publiques":
                     values=[val, 100-val],
                     marker=dict(colors=[BLEU_MOYEN, BLEU_TRES_CLAIR]),
                     hovertemplate='%{label}: %{value:.1f}%<extra></extra>',
-                    textinfo='label+percent'
+                    textinfo='label+percent',
+                    textposition='outside',
+                    textfont=dict(size=12, color='black'),
+                    insidetextorientation='horizontal'
                 ))
                 fig.update_layout(
                     title="Poids des recettes fiscales – 2024<br><sub>Source: FMI (2023)</sub>",
-                    height=400
+                    height=400,
+                    showlegend=False,
+                    margin=dict(l=20, r=20, t=80, b=20),
+                    font=dict(size=11)
                 )
                 st.plotly_chart(fig, use_container_width=True, config=plotly_config)
             else:
@@ -937,14 +943,14 @@ elif page == "💼 Finances Publiques":
                 marker_color=BLEU_MOYEN,
                 hovertemplate='<b>%{x}</b><br>%{y:.2f}% PIB<extra></extra>',
                 text=df_bar["Recettes_fiscales_pct_PIB"].apply(lambda x: f"{x:.1f}%"),
-                textposition='outside'
+                textposition='outside',
+                textfont=dict(size=10, color=BLEU_FONCE)
             ))
             fig.update_layout(
                 title="Recettes Fiscales 2007-2024<br><sub>Source: FMI</sub>",
-                yaxis_title="% PIB", plot_bgcolor='rgba(0,0,0,0)', height=400
+                yaxis_title="% PIB",height=450,margin=dict(l=40, r=40, t=80, b=40), plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(tickangle=45, showgrid=True, gridcolor='rgba(0,0,0,0.1)'),
+                yaxis=dict(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
             )
-            fig.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-            fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
             st.plotly_chart(fig, use_container_width=True, config=plotly_config)
     
     st.markdown("<br>", unsafe_allow_html=True)
