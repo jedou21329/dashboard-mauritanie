@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/macro_mauritanie_complet_1960_2024.csv")
+    df = pd.read_csv("macro_mauritanie_complet_1960_2024.csv")
     df["Année"] = df["Année"].astype(int)
     df = df.groupby("Année", as_index=False).first()
     df = df.sort_values("Année").reset_index(drop=True)
