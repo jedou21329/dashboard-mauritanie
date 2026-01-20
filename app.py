@@ -917,7 +917,7 @@ elif page == "💼 Finances Publiques":
                     marker=dict(colors=[BLEU_MOYEN, BLEU_TRES_CLAIR]),
                     hovertemplate='%{label}: %{value:.1f}%<extra></extra>',
                     textinfo='label+percent',
-                    textposition='outside',
+                    textposition='inside',
                     textfont=dict(size=12, color='black'),
                     insidetextorientation='horizontal'
                 ))
