@@ -257,7 +257,12 @@ BLEU_TRES_CLAIR = "#E6F0FA"
 VERT = "#10B981"
 ROUGE = "#EF4444"
 
-plotly_config = {'displayModeBar': True, 'displaylogo': False}
+plotly_config = {
+    'displayModeBar': True, 
+    'displaylogo': False,
+    'modeBarButtonsToAdd': ['pan2d', 'zoomIn2d', 'zoomOut2d', 'resetScale2d'],
+    'scrollZoom': True
+}
 
 # SIDEBAR
 with st.sidebar:
@@ -335,36 +340,72 @@ if page == "📍 Vue d'ensemble":
     df_pib = df_filtered.dropna(subset=['Croissance_PIB_pct']).copy()
     if len(df_pib) > 0:
         fig = go.Figure()
+        
+        # Ligne de croissance principale
         fig.add_trace(go.Scatter(
             x=df_pib["Année"], y=df_pib["Croissance_PIB_pct"],
             mode='lines', name='Croissance',
-            line=dict(color=BLEU_FONCE, width=3),
-            hovertemplate='<b>%{x}</b><br>%{y:.2f}%<extra></extra>'
+            line=dict(color='#0B3C5D', width=2.5),
+            hovertemplate='<b>%{x}</b><br>Croissance: %{y:.2f}%<extra></extra>'
         ))
+        
+        # Tendance long terme
         fig.add_trace(go.Scatter(
             x=df_pib["Année"], y=df_pib["Croissance_PIB_pct"].rolling(10).mean(),
             mode='lines', name='Tendance long terme',
-            line=dict(color=BLEU_MOYEN, width=3, dash='dash'),
-            hovertemplate='<b>%{x}</b><br>%{y:.2f}%<extra></extra>'
+            line=dict(color='#1F77B4', width=3),
+            hovertemplate='<b>%{x}</b><br>Tendance: %{y:.2f}%<extra></extra>'
         ))
-        fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5)
         
-        for year, label in zip([1975, 2009, 2020], ["Choc pétrolier", "Crise financière", "COVID-19"]):
+        # Ligne zéro
+        fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.3, line_width=1)
+        
+        # Annotations des crises
+        annotations_data = [
+            (1975, "Choc pétrolier"),
+            (2009, "Crise financière"),
+            (2020, "COVID-19")
+        ]
+        
+        for year, label in annotations_data:
             if year in df_pib["Année"].values and year_range[0] <= year <= year_range[1]:
                 y_val = df_pib.loc[df_pib["Année"] == year, "Croissance_PIB_pct"].values[0]
                 fig.add_annotation(
-                    x=year, y=y_val, text=label, showarrow=True,
-                    arrowhead=2, ax=0, ay=-40, font=dict(size=10, color=BLEU_FONCE)
+                    x=year, y=y_val, text=label,
+                    showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.5,
+                    arrowcolor='#0B3C5D', ax=0, ay=-50,
+                    font=dict(size=10, color='#0B3C5D'),
+                    bgcolor='rgba(255,255,255,0.8)', bordercolor='#0B3C5D', borderwidth=1
                 )
         
         fig.update_layout(
-            title="Croissance du PIB – cycles économiques et chocs<br><sub>Source: BCM, FMI, Banque Mondiale</sub>",
-            yaxis_title="Croissance (%)", hovermode='x unified',
-            plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-            height=450, showlegend=True
+            title={
+                'text': "Croissance du PIB – cycles économiques et chocs<br><sub>Source : BCM, FMI, Banque Mondiale</sub>",
+                'font': {'size': 16, 'color': '#0B3C5D', 'family': 'Inter'}
+            },
+            xaxis_title="", yaxis_title="%",
+            hovermode='x unified',
+            plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
+            height=450, showlegend=True,
+            legend=dict(
+                orientation="h", yanchor="top", y=1.15, xanchor="right", x=1,
+                bgcolor='rgba(255,255,255,0.8)', bordercolor='#0B3C5D', borderwidth=1
+            ),
+            font=dict(family='Inter', color='#0B3C5D', size=11),
+            margin=dict(l=60, r=40, t=100, b=60)
         )
-        fig.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-        fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
+        
+        fig.update_xaxes(
+            showgrid=True, gridcolor='rgba(0,0,0,0.1)', gridwidth=0.5,
+            showline=True, linecolor='#0B3C5D', linewidth=1.5,
+            zeroline=False
+        )
+        fig.update_yaxes(
+            showgrid=True, gridcolor='rgba(0,0,0,0.1)', gridwidth=0.5,
+            showline=True, linecolor='#0B3C5D', linewidth=1.5,
+            zeroline=False
+        )
+        
         st.plotly_chart(fig, use_container_width=True, config=plotly_config)
     
     # VIS 2: Inflation – régimes
@@ -372,25 +413,77 @@ if page == "📍 Vue d'ensemble":
     df_infl = df_filtered.dropna(subset=['Inflation_pct']).copy()
     if len(df_infl) > 0:
         median = df_infl["Inflation_pct"].median()
+        
         fig = go.Figure()
+        
+        # Zone de régime inflation élevée (fill between)
+        df_high = df_infl.copy()
+        df_high.loc[df_high["Inflation_pct"] <= median, "Inflation_pct"] = median
+        
+        fig.add_trace(go.Scatter(
+            x=df_infl["Année"], 
+            y=[median] * len(df_infl),
+            mode='lines',
+            line=dict(width=0),
+            showlegend=False,
+            hoverinfo='skip'
+        ))
+        
+        fig.add_trace(go.Scatter(
+            x=df_high["Année"], 
+            y=df_high["Inflation_pct"],
+            mode='lines',
+            fill='tonexty',
+            fillcolor='rgba(174, 199, 232, 0.4)',
+            line=dict(width=0),
+            name='Régime inflation élevée',
+            hoverinfo='skip'
+        ))
+        
+        # Ligne principale d'inflation
         fig.add_trace(go.Scatter(
             x=df_infl["Année"], y=df_infl["Inflation_pct"],
             mode='lines', name='Inflation',
-            line=dict(color=BLEU_FONCE, width=3),
-            fill='tonexty', fillcolor='rgba(174,199,232,0.3)',
-            hovertemplate='<b>%{x}</b><br>%{y:.2f}%<extra></extra>'
+            line=dict(color='#0B3C5D', width=2.5),
+            hovertemplate='<b>%{x}</b><br>Inflation: %{y:.2f}%<extra></extra>'
         ))
-        fig.add_hline(y=median, line_dash="dash", line_color=BLEU_MOYEN,
-                     annotation_text=f"Médiane ({median:.1f}%)", annotation_position="right")
+        
+        # Ligne médiane
+        fig.add_hline(
+            y=median, line_dash="dash", line_color='#1F77B4', line_width=2,
+            annotation_text=f"Inflation médiane ({median:.1f}%)",
+            annotation_position="top right",
+            annotation=dict(font=dict(size=11, color='#1F77B4'))
+        )
         
         fig.update_layout(
-            title="Inflation – régimes macroéconomiques<br><sub>Source: BCM, FMI</sub>",
-            yaxis_title="Inflation (%)", hovermode='x unified',
-            plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
-            height=450
+            title={
+                'text': "Inflation – régimes macroéconomiques<br><sub>Source : BCM, FMI</sub>",
+                'font': {'size': 16, 'color': '#0B3C5D', 'family': 'Inter'}
+            },
+            xaxis_title="", yaxis_title="%",
+            hovermode='x unified',
+            plot_bgcolor='white', paper_bgcolor='rgba(0,0,0,0)',
+            height=450, showlegend=True,
+            legend=dict(
+                orientation="h", yanchor="top", y=1.15, xanchor="right", x=1,
+                bgcolor='rgba(255,255,255,0.8)', bordercolor='#0B3C5D', borderwidth=1
+            ),
+            font=dict(family='Inter', color='#0B3C5D', size=11),
+            margin=dict(l=60, r=40, t=100, b=60)
         )
-        fig.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-        fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
+        
+        fig.update_xaxes(
+            showgrid=True, gridcolor='rgba(0,0,0,0.1)', gridwidth=0.5,
+            showline=True, linecolor='#0B3C5D', linewidth=1.5,
+            zeroline=False
+        )
+        fig.update_yaxes(
+            showgrid=True, gridcolor='rgba(0,0,0,0.1)', gridwidth=0.5,
+            showline=True, linecolor='#0B3C5D', linewidth=1.5,
+            zeroline=False
+        )
+        
         st.plotly_chart(fig, use_container_width=True, config=plotly_config)
     
     # VIS 10: Moyennes par décennie
