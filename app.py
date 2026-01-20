@@ -541,7 +541,7 @@ if page == "📍 Vue d'ensemble":
         fig.update_yaxes(title_text="Pourcentage (%)")
         st.plotly_chart(fig, use_container_width=True, config=plotly_config)
 
-# ===================================== 
+# =====================================
 # PAGE 2: CROISSANCE & INFLATION
 # =====================================
 elif page == "📈 Croissance & Inflation":
@@ -554,134 +554,236 @@ elif page == "📈 Croissance & Inflation":
     </div>
     """, unsafe_allow_html=True)
     
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Volatilité", "🔥 Distribution", "💹 Phillips", "📦 Boxplot"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Cycles Économiques", "🔥 Régimes d'Inflation", "💹 Courbe Phillips", "📈 Volatilité"])
     
     with tab1:
-        # VIS 11: Volatilité
-        st.markdown("### 📉 Visualisation 11 – Volatilité et incertitude de la croissance")
+        # (Ton code existant pour les cycles est déjà bon)
+        st.markdown("### 🔄 Croissance du PIB – Cycles et Chocs")
         df_pib = df_filtered.dropna(subset=['Croissance_PIB_pct']).copy()
-        if len(df_pib) >= 10:
-            roll_mean = df_pib['Croissance_PIB_pct'].rolling(10, min_periods=1).mean()
-            roll_std = df_pib['Croissance_PIB_pct'].rolling(10, min_periods=1).std()
-            
+        if len(df_pib) > 0:
+            df_pib['Tendance'] = df_pib['Croissance_PIB_pct'].rolling(10, min_periods=1).mean()
             fig = go.Figure()
-            
-            # Bande d'incertitude
             fig.add_trace(go.Scatter(
-                x=df_pib["Année"], y=roll_mean,
-                mode='lines', name='Moyenne mobile (10 ans)',
-                line=dict(color=BLEU_FONCE, width=3)
+                x=df_pib["Année"],
+                y=[0]*len(df_pib),
+                fill=None,
+                mode='lines',
+                line_color='rgba(0,0,0,0)',
+                showlegend=False,
+                hoverinfo='skip'
             ))
             fig.add_trace(go.Scatter(
-                x=df_pib["Année"], y=roll_mean + roll_std,
-                mode='lines', name='+ 1 écart-type',
-                line=dict(width=0), showlegend=False
+                x=df_pib["Année"],
+                y=df_pib["Croissance_PIB_pct"],
+                fill='tonexty',
+                fillcolor='rgba(174, 199, 232, 0.6)',
+                line=dict(width=0),
+                showlegend=False,
+                hoverinfo='skip'
             ))
             fig.add_trace(go.Scatter(
-                x=df_pib["Année"], y=roll_mean - roll_std,
-                mode='lines', name='- 1 écart-type',
-                line=dict(width=0), fillcolor='rgba(174,199,232,0.4)',
-                fill='tonexty', showlegend=True
+                x=df_pib["Année"],
+                y=df_pib["Croissance_PIB_pct"],
+                mode='lines',
+                name='Croissance',
+                line=dict(color=BLEU_FONCE, width=3),
+                hovertemplate='<b>%{x}</b><br>Croissance: %{y:.1f}%<extra></extra>'
             ))
-            
+            fig.add_trace(go.Scatter(
+                x=df_pib["Année"],
+                y=df_pib['Tendance'],
+                mode='lines',
+                name='Tendance 10 ans',
+                line=dict(color=BLEU_MOYEN, width=4, dash='dash'),
+                hovertemplate='<b>%{x}</b><br>Tendance: %{y:.1f}%<extra></extra>'
+            ))
+            annotations = []
+            for year, label in zip([1975, 2009, 2020], ["⚡ Choc pétrolier", "💥 Crise financière", "🦠 COVID-19"]):
+                if year in df_pib["Année"].values and year >= year_range[0] and year <= year_range[1]:
+                    y_val = df_pib.loc[df_pib["Année"] == year, "Croissance_PIB_pct"].values[0]
+                    annotations.append(dict(
+                        x=year, y=y_val,
+                        text=label,
+                        showarrow=True,
+                        arrowhead=2,
+                        arrowcolor=BLEU_FONCE,
+                        ax=0, ay=-60,
+                        font=dict(size=12, color=BLEU_FONCE, family="Inter"),
+                        bgcolor="white",
+                        bordercolor=BLEU_FONCE,
+                        borderwidth=2,
+                        borderpad=8
+                    ))
             fig.update_layout(
-                title="Croissance du PIB – volatilité et incertitude<br><sub>Source: Banque Mondiale</sub>",
-                yaxis_title="Croissance (%)", height=450,
-                plot_bgcolor='rgba(0,0,0,0)', hovermode='x unified'
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                xaxis=dict(showgrid=False),
+                yaxis=dict(title='Croissance (%)', showgrid=True, gridcolor='rgba(0,0,0,0.05)', zeroline=True, zerolinecolor='#CBD5E1'),
+                hovermode='x unified',
+                annotations=annotations,
+                height=500,
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
-            fig.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-            fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("📊 Moyenne", f"{df_pib['Croissance_PIB_pct'].mean():.2f}%")
+            with col2:
+                st.metric("📈 Maximum", f"{df_pib['Croissance_PIB_pct'].max():.2f}%")
+            with col3:
+                st.metric("📉 Minimum", f"{df_pib['Croissance_PIB_pct'].min():.2f}%")
+            with col4:
+                st.metric("📏 Écart-type", f"{df_pib['Croissance_PIB_pct'].std():.2f}%")
+        else:
+            st.info("📊 Pas de données disponibles pour cette période")
     
     with tab2:
         st.markdown("### 🔥 Distribution de l'Inflation")
         df_infl = df_filtered.dropna(subset=['Inflation_pct']).copy()
         if len(df_infl) > 0:
             col1, col2 = st.columns(2)
-            
             with col1:
-                fig = go.Figure()
-                fig.add_trace(go.Histogram(
-                    x=df_infl["Inflation_pct"], nbinsx=20,
-                    marker_color=BLEU_MOYEN, opacity=0.8,
-                    hovertemplate='Inflation: %{x:.1f}%<br>Fréquence: %{y}<extra></extra>'
+                # Histogramme amélioré
+                fig_hist = go.Figure()
+                fig_hist.add_trace(go.Histogram(
+                    x=df_infl["Inflation_pct"],
+                    nbinsx=20,
+                    marker=dict(
+                        color=BLEU_MOYEN,
+                        line=dict(color='white', width=2)
+                    ),
+                    name='Distribution'
                 ))
-                fig.update_layout(
+                fig_hist.update_layout(
                     title="Distribution de l'inflation<br><sub>Source: BCM</sub>",
-                    xaxis_title="Inflation (%)", yaxis_title="Fréquence",
-                    plot_bgcolor='rgba(0,0,0,0)', height=400
+                    xaxis_title="Inflation (%)",
+                    yaxis_title="Fréquence",
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    height=350,
+                    showlegend=False,
+                    xaxis=dict(showgrid=True, gridcolor='rgba(0,0,0,0.05)'),
+                    yaxis=dict(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
                 )
-                fig.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-                fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
-            
+                st.plotly_chart(fig_hist, use_container_width=True, config={'displayModeBar': False})
+                
             with col2:
-                fig = go.Figure()
-                fig.add_trace(go.Box(
+                # Boxplot amélioré
+                fig_box = go.Figure()
+                fig_box.add_trace(go.Box(
                     y=df_infl["Inflation_pct"],
-                    marker_color=BLEU_MOYEN,
+                    marker_color=BLEU_FONCE,
                     name='Inflation',
-                    hovertemplate='%{y:.2f}%<extra></extra>'
+                    boxmean='sd',
+                    whiskerwidth=0.5,
+                    line=dict(width=2, color='black'),
+                    fillcolor=BLEU_CLAIR,
+                    boxpoints='outliers'
                 ))
-                fig.update_layout(
+                fig_box.update_layout(
                     title="Statistiques descriptives<br><sub>Source: BCM</sub>",
                     yaxis_title="Inflation (%)",
-                    plot_bgcolor='rgba(0,0,0,0)', height=400, showlegend=False
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    height=350,
+                    showlegend=False,
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
                 )
-                fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-                st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+                st.plotly_chart(fig_box, use_container_width=True, config={'displayModeBar': False})
+        else:
+            st.info("📊 Pas de données disponibles pour cette période")
     
     with tab3:
-        # VIS 5: Courbe de Phillips
-        st.markdown("### 💹 Courbe de Phillips – Mauritanie")
+        st.markdown("### 💹 Courbe de Phillips – Mauritanie (2007–2021)")
         df_ph = df_filtered.dropna(subset=["Inflation_pct", "Taux_chomage_pct"])
         if len(df_ph) > 0:
             fig = go.Figure()
             fig.add_trace(go.Scatter(
-                x=df_ph["Taux_chomage_pct"], y=df_ph["Inflation_pct"],
-                mode='markers', text=df_ph["Année"],
-                marker=dict(size=12, color=df_ph["Année"], colorscale='Blues',
-                           showscale=True, colorbar=dict(title="Année")),
+                x=df_ph["Taux_chomage_pct"],
+                y=df_ph["Inflation_pct"],
+                mode='markers',
+                marker=dict(
+                    size=12,
+                    color=df_ph["Année"],
+                    colorscale='Blues',
+                    showscale=True,
+                    colorbar=dict(title="Année", len=0.7),
+                    line=dict(width=2, color='white')
+                ),
+                text=df_ph["Année"].astype(str),
                 hovertemplate='Année: %{text}<br>Chômage: %{x:.1f}%<br>Inflation: %{y:.1f}%<extra></extra>'
             ))
             fig.update_layout(
-                title="Courbe de Phillips – Mauritanie (2007–2021)<br><sub>Source: BCM</sub>",
-                xaxis_title="Chômage (%)", yaxis_title="Inflation (%)",
-                plot_bgcolor='rgba(0,0,0,0)', height=500
+                title="Courbe de Phillips – Mauritanie (2007–2021)<br><sub>Source : BCM</sub>",
+                xaxis=dict(
+                    title='Taux de Chômage (%)',
+                    showgrid=True,
+                    gridcolor='rgba(0,0,0,0.05)',
+                    tickfont=dict(size=12),
+                    titlefont=dict(size=14)
+                ),
+                yaxis=dict(
+                    title='Taux d\'Inflation (%)',
+                    showgrid=True,
+                    gridcolor='rgba(0,0,0,0.05)',
+                    tickfont=dict(size=12),
+                    titlefont=dict(size=14)
+                ),
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                height=500,
+                margin=dict(l=60, r=60, t=100, b=60)
             )
-            fig.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-            fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
         else:
             st.info("📊 Données insuffisantes pour la courbe de Phillips")
     
     with tab4:
-        # VIS 9: Boxplot par période
-        st.markdown("### 📦 Distribution de la croissance par période")
-        df_box = df.copy()
-        df_box["Période"] = pd.cut(df_box["Année"], bins=[1960, 1980, 2000, 2024], 
-                                    labels=["1960-1980", "1981-2000", "2001-2024"])
-        df_box = df_box[df_box["Période"].notna()]
-        
-        if len(df_box) > 0:
+        st.markdown("### 📉 Volatilité de la croissance")
+        df_vol = df_filtered.dropna(subset=['Croissance_PIB_pct']).copy()
+        if len(df_vol) >= 10:
+            roll_mean = df_vol['Croissance_PIB_pct'].rolling(10, min_periods=1).mean()
+            roll_std = df_vol['Croissance_PIB_pct'].rolling(10, min_periods=1).std()
             fig = go.Figure()
-            for i, period in enumerate(["1960-1980", "1981-2000", "2001-2024"]):
-                data = df_box[df_box["Période"] == period]["Croissance_PIB_pct"].dropna()
-                color = [BLEU_CLAIR, BLEU_MOYEN, BLEU_FONCE][i]
-                fig.add_trace(go.Box(
-                    y=data, name=period,
-                    marker_color=color,
-                    hovertemplate='%{y:.2f}%<extra></extra>'
-                ))
-            
+            fig.add_trace(go.Scatter(
+                x=df_vol["Année"],
+                y=roll_mean + roll_std,
+                fill=None,
+                mode='lines',
+                line_color='rgba(0,0,0,0)',
+                showlegend=False,
+                hoverinfo='skip'
+            ))
+            fig.add_trace(go.Scatter(
+                x=df_vol["Année"],
+                y=roll_mean - roll_std,
+                fill='tonexty',
+                fillcolor='rgba(174, 199, 232, 0.4)',
+                mode='lines',
+                name='± 1 écart-type',
+                line_color='rgba(0,0,0,0)'
+            ))
+            fig.add_trace(go.Scatter(
+                x=df_vol["Année"],
+                y=roll_mean,
+                mode='lines',
+                name='Moyenne mobile (10 ans)',
+                line=dict(color=BLEU_FONCE, width=4),
+                hovertemplate='<b>%{x}</b><br>Moyenne: %{y:.1f}%<extra></extra>'
+            ))
             fig.update_layout(
-                title="Distribution de la croissance du PIB par période<br><sub>Source: Banque Mondiale</sub>",
-                yaxis_title="Croissance (%)",
-                plot_bgcolor='rgba(0,0,0,0)', height=500
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                xaxis=dict(showgrid=False),
+                yaxis=dict(title='Croissance (%)', showgrid=True, gridcolor='rgba(0,0,0,0.05)'),
+                height=450,
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
-            fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
-
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+        else:
+            st.info("📊 Période trop courte pour l'analyse de volatilité")
 # ===================================== 
 # PAGE 3: SECTEUR EXTERNE
 # =====================================
