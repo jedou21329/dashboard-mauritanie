@@ -1103,7 +1103,7 @@ elif page == "📊 Analyses Avancées":
                 line=dict(color=BLEU_FONCE, width=2),
                 text=df_3d["Année"],
                 hovertemplate='Année: %{text}<br>Inflation: %{x:.1f}%<br>Chômage: %{y:.1f}%<br>Croissance: %{z:.1f}%<extra></extra>'
-            ))
+            )))
             fig.update_layout(
                 title="Trajectoire macroéconomique 3D (depuis 2000)<br><sub>Source: Calculs propres</sub>",
                 scene=dict(
