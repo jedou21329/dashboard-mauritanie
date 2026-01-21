@@ -1121,7 +1121,7 @@ elif page == "📊 Analyses Avancées":
                         tickmode='array',
                         len=0.8,
                         thickness=20,
-                        tickfont=dict(size=10)
+                        tickfont=dict(size=12)
                     ),
                     cmin=min_year,
                     cmax=max_year
