@@ -1082,6 +1082,27 @@ elif page == "📊 Analyses Avancées":
         st.markdown("### 🎲 Trajectoire Macroéconomique 3D")
         df_3d = df_filtered.dropna(subset=["Inflation_pct", "Taux_chomage_pct", "Croissance_PIB_pct"])
         if len(df_3d) > 5:
+            # Préparation des années pour la colorbar
+            # Convertir les années en nombres pour un meilleur contrôle
+            annees_numeriques = pd.to_numeric(df_3d["Année"], errors='coerce')
+            
+            # Calculer les ticks pour la colorbar
+            min_year = int(annees_numeriques.min())
+            max_year = int(annees_numeriques.max())
+            
+            # Créer des ticks adaptés à la plage d'années
+            if (max_year - min_year) > 10:
+                step = max(1, (max_year - min_year) // 5)  # Environ 5 ticks
+                tickvals = list(range(min_year, max_year + 1, step))
+                # S'assurer que la dernière année est incluse
+                if tickvals[-1] != max_year:
+                    tickvals.append(max_year)
+            else:
+                tickvals = list(range(min_year, max_year + 1))
+            
+            # Créer les textes des ticks avec format complet
+            ticktext = [str(int(year)) for year in tickvals]
+            
             fig = go.Figure()
             fig.add_trace(go.Scatter3d(
                 x=df_3d["Inflation_pct"], 
@@ -1090,13 +1111,23 @@ elif page == "📊 Analyses Avancées":
                 mode='markers+lines', 
                 marker=dict(
                     size=8, 
-                    color=df_3d["Année"], 
+                    color=annees_numeriques,  # Utiliser les années numériques
                     colorscale='Blues',
                     showscale=True, 
-                    colorbar=dict(title="Année")
+                    colorbar=dict(
+                        title="Année",
+                        tickvals=tickvals,  # Spécifier les valeurs des ticks
+                        ticktext=ticktext,   # Spécifier le texte complet des ticks
+                        tickmode='array',
+                        len=0.8,
+                        thickness=20,
+                        tickfont=dict(size=10)
+                    ),
+                    cmin=min_year,
+                    cmax=max_year
                 ),
                 line=dict(color=BLEU_FONCE, width=2),
-                text=df_3d["Année"],
+                text=df_3d["Année"].astype(str),
                 hovertemplate='Année: %{text}<br>Inflation: %{x:.1f}%<br>Chômage: %{y:.1f}%<br>Croissance: %{z:.1f}%<extra></extra>'
             ))
             fig.update_layout(
@@ -1106,7 +1137,8 @@ elif page == "📊 Analyses Avancées":
                     yaxis_title="Chômage (%)",
                     zaxis_title="Croissance (%)"
                 ),
-                height=600
+                height=600,
+                margin=dict(l=0, r=80, t=80, b=0)  # Marge droite pour la colorbar
             )
             st.plotly_chart(fig, use_container_width=True, config=plotly_config)
         else:
