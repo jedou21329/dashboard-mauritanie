@@ -1211,7 +1211,8 @@ elif page == "📊 Analyses Avancées":
                 xaxis_title="Inflation (%)", 
                 yaxis_title="Croissance (%)",
                 plot_bgcolor='rgba(0,0,0,0)', 
-                height=500
+                height=500,
+                margin=dict(l=0, r=150, t=80, b=0)
             )
             fig.update_xaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
             fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.1)')
