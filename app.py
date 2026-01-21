@@ -1138,7 +1138,7 @@ elif page == "📊 Analyses Avancées":
                     zaxis_title="Croissance (%)"
                 ),
                 height=600,
-                margin=dict(l=0, r=80, t=80, b=0)  # Marge droite pour la colorbar
+                margin=dict(l=50, r=30, t=80, b=0)  # Marge droite pour la colorbar
             )
             st.plotly_chart(fig, use_container_width=True, config=plotly_config)
         else:
