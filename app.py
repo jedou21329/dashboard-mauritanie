@@ -1106,7 +1106,7 @@ elif page == "📊 Analyses Avancées":
                     yaxis_title="Chômage (%)",
                     zaxis_title="Croissance (%)"
                 ),
-                height=600
+                height=300
             )
             st.plotly_chart(fig, use_container_width=True, config=plotly_config)
         else:
