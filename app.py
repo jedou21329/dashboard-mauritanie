@@ -1094,7 +1094,6 @@ elif page == "📊 Analyses Avancées":
                     showscale=True,
                     colorbar=dict(title="Année", len=0.7),
                     line=dict(width=2, color='white'),
-                    text=df_3d["Année"],
                     hovertemplate='<b>Année %{text}</b><br>Inflation: %{x:.1f}%<br>Chômage: %{y:.1f}%<br>Croissance: %{z:.1f}%<extra></extra>'
                 ),
                 line=dict(color=BLEU_FONCE, width=4),
