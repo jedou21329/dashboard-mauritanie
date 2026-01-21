@@ -1093,17 +1093,12 @@ elif page == "📊 Analyses Avancées":
                     color=df_3d["Année"], 
                     colorscale='Blues',
                     showscale=True, 
-                    colorbar=dict(title="Année",
-                                  thickness=12,
-                                  len=1,
-                                  tickmode="array",
-                                  tickvals=years[::2],
-                                  ticktext=[str(y) for y in years[::2]]
+                    colorbar=dict(title="Année")
                 ),
                 line=dict(color=BLEU_FONCE, width=2),
                 text=df_3d["Année"],
                 hovertemplate='Année: %{text}<br>Inflation: %{x:.1f}%<br>Chômage: %{y:.1f}%<br>Croissance: %{z:.1f}%<extra></extra>'
-            )))
+            ))
             fig.update_layout(
                 title="Trajectoire macroéconomique 3D (depuis 2000)<br><sub>Source: Calculs propres</sub>",
                 scene=dict(
