@@ -1157,7 +1157,7 @@ elif page == "📊 Analyses Avancées":
                 x=df_area["Année"], y=df_area["Inflation_pct"],
                 mode='lines', name='Inflation',
                 fill='tonexty', fillcolor='rgba(174,199,232,0.4)',
-                line=dict(color=BLEU_CLAIR, width=2),
+                line=dict(color=BLEU_FONCE, width=2),
                 hovertemplate='<b>%{x}</b><br>Inflation: %{y:.1f}%<extra></extra>'
             ))
             fig.add_trace(go.Scatter(
