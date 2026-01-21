@@ -1040,7 +1040,7 @@ elif page == "📊 Analyses Avancées":
                 colorbar=dict(
                     title="Corrélation",
                     thickness=30,
-                    len=1,
+                    len=0.8,
                     tickmode="array",
                     tickvals=[-1, -0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8, 1],
                     ticktext=["-1", "-0.8","-0.6","-0.4","-0.2","0","+0.2","+0.4","+0.6","+0.8", "+1"],
@@ -1071,44 +1071,53 @@ elif page == "📊 Analyses Avancées":
             # Affichage du graphique
             st.plotly_chart(fig, use_container_width=True, config=plotly_config)
         
-        else:  # CE ELSE DOIT ÊTRE DANS LE BLOC with tab1:
+        else:
             st.info("📊 Données insuffisantes pour calculer les corrélations (minimum 5 observations)")
     
     # ============================================================================
     # ONGLET 2 : Trajectoire 3D
     # ============================================================================
     with tab2:
-        # VIS 13: Trajectoire 3D
-        st.markdown("### 🎲 Trajectoire Macroéconomique 3D")
+        st.markdown("### 🎲 Trajectoire Macroéconomique 3D (depuis 2000)")
         df_3d = df_filtered.dropna(subset=["Inflation_pct", "Taux_chomage_pct", "Croissance_PIB_pct"])
         if len(df_3d) > 5:
             fig = go.Figure()
             fig.add_trace(go.Scatter3d(
-                x=df_3d["Inflation_pct"], 
-                y=df_3d["Taux_chomage_pct"], 
+                x=df_3d["Inflation_pct"],
+                y=df_3d["Taux_chomage_pct"],
                 z=df_3d["Croissance_PIB_pct"],
-                mode='markers+lines', 
+                mode='markers+lines',
                 marker=dict(
-                    size=8, 
-                    color=df_3d["Année"], 
+                    size=10,
+                    color=df_3d["Année"],
                     colorscale='Blues',
-                    showscale=True, 
-                    colorbar=dict(title="Année")
+                    showscale=True,
+                    colorbar=dict(title="Année", len=0.7),
+                    line=dict(width=2, color='white'),
+                    text=df_3d["Année"],
+                    hovertemplate='<b>Année %{text}</b><br>Inflation: %{x:.1f}%<br>Chômage: %{y:.1f}%<br>Croissance: %{z:.1f}%<extra></extra>'
                 ),
-                line=dict(color=BLEU_FONCE, width=2),
+                line=dict(color=BLEU_FONCE, width=4),
                 text=df_3d["Année"],
-                hovertemplate='Année: %{text}<br>Inflation: %{x:.1f}%<br>Chômage: %{y:.1f}%<br>Croissance: %{z:.1f}%<extra></extra>'
+                textposition='top center',
+                textfont=dict(size=9, color=BLEU_FONCE, family="Inter"),
+                hovertemplate='<b>Année %{text}</b><br>Inflation: %{x:.1f}%<br>Chômage: %{y:.1f}%<br>Croissance: %{z:.1f}%<extra></extra>'
             ))
             fig.update_layout(
                 title="Trajectoire macroéconomique 3D (depuis 2000)<br><sub>Source: Calculs propres</sub>",
                 scene=dict(
                     xaxis_title="Inflation (%)",
                     yaxis_title="Chômage (%)",
-                    zaxis_title="Croissance (%)"
+                    zaxis_title="Croissance (%)",
+                    bgcolor='rgba(248,250,252,0.5)',
+                    xaxis=dict(backgroundcolor="rgba(255,255,255,0.9)", gridcolor='rgba(0,0,0,0.1)'),
+                    yaxis=dict(backgroundcolor="rgba(255,255,255,0.9)", gridcolor='rgba(0,0,0,0.1)'),
+                    zaxis=dict(backgroundcolor="rgba(255,255,255,0.9)", gridcolor='rgba(0,0,0,0.1)')
                 ),
-                height=400
+                height=500,
+                margin=dict(l=0, r=0, t=80, b=0)
             )
-            st.plotly_chart(fig, use_container_width=True, config=plotly_config)
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
         else:
             st.info("📊 Données insuffisantes pour la visualisation 3D")
     
@@ -1186,7 +1195,6 @@ elif page == "📊 Analyses Avancées":
             st.plotly_chart(fig, use_container_width=True, config=plotly_config)
         else:
             st.info("📊 Pas de données disponibles depuis 2000")
-
 # ===================================== 
 # FOOTER
 # =====================================
